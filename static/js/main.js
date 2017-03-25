@@ -14,7 +14,6 @@ $( document ).ready(function() {
     }});
 });
 
-
 // Subsequent appointment requests.
 
 $("#list-appointments").click(function(){
@@ -30,14 +29,12 @@ $("#list-appointments").click(function(){
     }});
 });
 
-
-
 function appointmentCard(appointment) {
 	result = "<div  class='card-panel container'>";
 	result += "<h5>" + appointment.title +"</h5>";
-	result += "<h6> Description: " + appointment.desc; + "</h6>";
-	result += "<h6> Date: " + appointment.date; + "</h6>";
-	result += "<h6> Time: " + appointment.time; + "</h6>";
+	result += "<h6> " + appointment.desc; + "</h6>";
+	result += "<h6> <b>Date:</b> " + appointment.date; + "</h6>";
+	result += "<h6> <b>Time:</b> " + appointment.time; + "</h6>";
 	result += "</div>";
 	return result; 
 }

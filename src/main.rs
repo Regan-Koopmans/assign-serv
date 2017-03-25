@@ -68,13 +68,11 @@ fn get_file_bytes(file_name : &str, add_headers: bool) -> Vec<u8> {
     // windows support. A 404 error is written if writing the 404 page.
 
     if add_headers {
-        
         if file_name != "static/html/404.html" {
             return_string.push_str("HTTP/1.1 200 OK\r\n");
         } else {
             return_string.push_str("HTTP/1.1 404 Not Found\r\n");
         }
-
         return_string.push_str("Content-Length: ");
         return_string.push_str(&(file_bytes.len()).to_string());
         return_string.push_str("\r\n");
@@ -91,14 +89,12 @@ fn get_file_bytes(file_name : &str, add_headers: bool) -> Vec<u8> {
         if file_name.contains(".gz") {
             return_string.push_str("Content-Encoding: gzip\r\n");
         }
-
         return_string.push_str("Connection: close\r\n\r\n");
     }
     let mut return_vector;
     unsafe { 
         return_vector = return_string.as_mut_vec().to_owned(); 
     }
-
     return_vector.append(&mut file_bytes);
     return_vector.to_owned()
 }
@@ -128,16 +124,19 @@ fn read_request(stream: TcpStream) {
                     
                     // Interface Data
 
-                    "/"             => ("static/html/login.html",      true),
-                    "/interface"    => ("static/html/interface.html",  true),
-                    "/main.css"     => ("static/css/main.css",  true),
-                    "/main.js"      => ("static/js/main.js",    true),
-                    "/favicon.ico"  => ("static/html/404.html", true),
+                    "/"             => ("static/html/login.html",     true),
+                    "/interface"    => ("static/html/interface.html", true),
+                    "/main.css"     => ("static/css/main.css",        true),
+                    "/main.js"      => ("static/js/main.js",          true),
+                    "/favicon.ico"  => ("static/html/404.html",       true),
 
 
                     // Appointments Data
 
                     "/get-appointments" => ("g-app", false),
+                    "/new"             =>  ("new",   false),
+                    "/edit"             => ("g-app", false),
+                    "/delete"           => ("g-app", false),
 
                     _               => ("static/html/404.html", true),
                 }
@@ -171,7 +170,6 @@ fn get_data(input: &str) -> String {
     let file = File::open("dat/regan.json").unwrap();
     let mut buf_reader = BufReader::new(file);
     buf_reader.read_to_string(&mut data).unwrap();
-    
     returnValue.push_str("HTTP/1.1 200 OK\r\n");
     let mut content_type = "Content-Type: text/json\r\n";
     returnValue.push_str("Content-Length: ");
@@ -179,6 +177,5 @@ fn get_data(input: &str) -> String {
     returnValue.push_str("\r\n");
     returnValue.push_str("Connection: close\r\n\r\n");
     returnValue.push_str(&data);
-
     returnValue
 }
