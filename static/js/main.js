@@ -3,12 +3,9 @@
 
 $( document ).ready(function() {
     $.ajax({url: "get-appointments", success: function(result){
-        
     	$("#list").html("<br>You have the following appointments:");
-
-    	for (appointment of JSON.parse(result).appointments) {
+    	for (appointment of JSON.parse(JSON.stringify(result)).appointments) {
     		console.log(appointment);
-
     		$("#list").append(appointmentCard(appointment));
     	}
     }});
@@ -18,12 +15,9 @@ $( document ).ready(function() {
 
 $("#list-appointments").click(function(){
     $.ajax({url: "get-appointments", success: function(result){
-        
     	$("#list").html("<br>You have the following appointments:");
-
-    	for (appointment of JSON.parse(result).appointments) {
+    	for (appointment of JSON.parse(JSON.stringify(result)).appointments) {
     		console.log(appointment);
-
     		$("#list").append(appointmentCard(appointment));
     	}
     }});

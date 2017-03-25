@@ -19,11 +19,10 @@ use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 
-// For time handling [external library]
+// For json interaction
 
-extern crate chrono;
-use chrono::prelude::*;
-use chrono::Duration;
+extern crate json;
+use json::JsonValue;
 
 // For environment/argument variabls
 
@@ -120,25 +119,33 @@ fn read_request(stream: TcpStream) {
                 println!("\x1B[1;33m{}\x1B[0m", line);
 
                 // respnse contains the tuple of the form (content, is_file?)
-                response = match line_array[1] {
+
+                if line_array[1].contains("?") {
+                    let get_array: Vec<&str> = line_array[1].split("?").collect();
+                    let get_params: Vec<&str> = get_array[1].split("&").collect();
+
+                    match get_array[0] {
+                        "add"           => add(&get_params),
+                        _               => (),
+                    }
+                    response = ("static/html/interface.html", true);
+                } else {
+
+                    response = match line_array[1] {
                     
                     // Interface Data
 
-                    "/"             => ("static/html/login.html",     true),
-                    "/interface"    => ("static/html/interface.html", true),
-                    "/main.css"     => ("static/css/main.css",        true),
-                    "/main.js"      => ("static/js/main.js",          true),
-                    "/favicon.ico"  => ("static/html/404.html",       true),
+                        "/"             => ("static/html/login.html",     true),
+                        "/interface"    => ("static/html/interface.html", true),
+                        "/main.css"     => ("static/css/main.css",        true),
+                        "/main.js"      => ("static/js/main.js",          true),
+                        "/favicon.ico"  => ("static/html/404.html",       true),
 
+                        // Appointments Data
 
-                    // Appointments Data
-
-                    "/get-appointments" => ("g-app", false),
-                    "/new"             =>  ("new",   false),
-                    "/edit"             => ("g-app", false),
-                    "/delete"           => ("g-app", false),
-
-                    _               => ("static/html/404.html", true),
+                        "/get-appointments" => ("g-app", false),
+                        _                   => ("static/html/404.html", true),
+                    }
                 }
             }
         }
@@ -166,16 +173,31 @@ fn write_response(mut stream: TcpStream, input:&str, is_file: bool) {
 
 fn get_data(input: &str) -> String {
     let mut data = String::new();
-    let mut returnValue = String::new();
+    let mut return_value = String::new();
     let file = File::open("dat/regan.json").unwrap();
     let mut buf_reader = BufReader::new(file);
     buf_reader.read_to_string(&mut data).unwrap();
-    returnValue.push_str("HTTP/1.1 200 OK\r\n");
-    let mut content_type = "Content-Type: text/json\r\n";
-    returnValue.push_str("Content-Length: ");
-    returnValue.push_str(& data.len().to_string());
-    returnValue.push_str("\r\n");
-    returnValue.push_str("Connection: close\r\n\r\n");
-    returnValue.push_str(&data);
-    returnValue
+    return_value.push_str("HTTP/1.1 200 OK\r\n");
+    return_value.push_str("Content-Type: text/json\r\n");
+    return_value.push_str("Content-Length: ");
+    return_value.push_str(& data.len().to_string());
+    return_value.push_str("\r\n");
+    return_value.push_str("Connection: close\r\n\r\n");
+    return_value.push_str(&data);
+    return_value
+}
+
+fn add(params: &Vec<&str>) {
+    let mut data = json::JsonValue::new_array();
+
+    let mut file_string = String::new();
+    
+    let file = File::open("dat/regan.json").unwrap();
+    
+    let mut buf_reader = BufReader::new(file);
+    buf_reader.read_to_string(&mut file_string).unwrap();
+
+
+
+    // let parsed = json::parse().unwrap();
 }

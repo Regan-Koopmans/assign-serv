@@ -4,5 +4,4 @@ version = "0.1.0"
 authors = ["Regan-Koopmans <regankoopmans@protonmail.com>"]
 
 [dependencies]
-chrono = "0.3.0"
 json = "0.11.6"
