@@ -19,10 +19,15 @@ use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 
+// for POST data handling
+
+extern crate urlparse;
+use urlparse::urlparse;
+
 // For json interaction
 
 extern crate json;
-use json::JsonValue;
+// use json::JsonVa;
 
 // For environment/argument variabls
 
@@ -125,9 +130,14 @@ fn read_request(stream: TcpStream) {
                     let get_params: Vec<&str> = get_array[1].split("&").collect();
 
                     match get_array[0] {
-                        "add"           => add(&get_params),
+                        "/add"           => add(&get_params),
                         _               => (),
                     }
+
+                    println!("{}", get_array[0]);
+
+
+
                     response = ("static/html/interface.html", true);
                 } else {
 
@@ -188,16 +198,22 @@ fn get_data(input: &str) -> String {
 }
 
 fn add(params: &Vec<&str>) {
-    let mut data = json::JsonValue::new_array();
 
     let mut file_string = String::new();
-    
-    let file = File::open("dat/regan.json").unwrap();
-    
+    let mut file = File::open("dat/regan.json").unwrap();
     let mut buf_reader = BufReader::new(file);
     buf_reader.read_to_string(&mut file_string).unwrap();
+    let mut parsed = json::parse(&file_string).unwrap();
+    let mut new_appoint = json::JsonValue::new_object();
+    let mut param_line:Vec<&str>;
+    for item in params {
+        param_line = item.split("=").collect();
+        new_appoint[param_line[0]] = param_line[1].into();
+    }
 
+    parsed["appointments"].push(new_appoint).unwrap();
+    file = File::create("dat/regan.json").unwrap();
 
+    file.write_all((json::stringify_pretty(parsed,4)).as_bytes()).unwrap();
 
-    // let parsed = json::parse().unwrap();
 }

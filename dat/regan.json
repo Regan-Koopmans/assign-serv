@@ -1,10 +1,11 @@
 {
-	"appointments" : [
-		{
-			"title" : "Meeting",
-			"desc" : "A very important business meeting.",
-			"date" : "14/02/2017",
-			"time" : "12:00:00"
-		}
-	]
+    "appointments": [
+        {
+            "title": "Meeting",
+            "time": "12:00",
+            "date": "today",
+            "desc": "A very important business meeting",
+            "part": "everyone"
+        }
+    ]
 }
