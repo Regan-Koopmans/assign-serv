@@ -85,6 +85,8 @@ fn get_file_bytes(file_name : &str, add_headers: bool) -> Vec<u8> {
             content_type = "Content-Type: text/html\r\n";
         } else if file_name.contains(".css") {
             content_type = "Content-Type: text/css\r\n";
+        } else if file_name.contains(".json") {
+            content_type = "Content-Type: text/json\r\n";
         } else if file_name.contains(".js") {
             content_type = "Content-Type: text/javascript\r\n";
         } 
@@ -149,6 +151,7 @@ fn read_request(stream: TcpStream) {
                         "/interface"    => ("static/html/interface.html", true),
                         "/main.css"     => ("static/css/main.css",        true),
                         "/main.js"      => ("static/js/main.js",          true),
+                        "/manifest.json"=> ("static/conf/manifest.json",          true),
                         "/favicon.ico"  => ("static/html/404.html",       true),
 
                         // Appointments Data
