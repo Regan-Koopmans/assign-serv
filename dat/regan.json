@@ -1,11 +1,3 @@
 {
-    "appointments": [
-        {
-            "title": "Test1",
-            "date": "2012-12-12",
-            "time": "12:00",
-            "desc": "TESTING",
-            "part": "asdf"
-        }
-    ]
+    "appointments": []
 }

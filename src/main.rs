@@ -22,7 +22,6 @@ use std::path::Path;
 // For json interaction
 
 extern crate json;
-// use json::JsonVa;
 
 // For environment/argument variabls
 
@@ -113,27 +112,19 @@ fn read_request(stream: TcpStream) {
             break;
         } else {
             let line_array: Vec<&str> = line.split(" ").collect();
-
-            // If the first part of the line is 'GET'
             if line_array[0] == "GET"  || line_array[0] == "POST" {
-
-                // highlight to show the get requests.
                 println!("\x1B[1;33m{}\x1B[0m", line);
-
-                // respnse contains the tuple of the form (content, is_file?)
-
                 if line_array[1].contains("?") {
                     let get_array: Vec<&str> = line_array[1].split("?").collect();
                     let get_params: Vec<&str> = get_array[1].split("&").collect();
-
                     match get_array[0] {
-                        "/add"           => add(&get_params),
-                        "/delete"        => delete(&get_params),
-                        _                => (),
+                        "/add"      => add(&get_params),
+                        "/delete"   => delete(&get_params),
+                        "/edit"     => edit(&get_params),
+                        _           => (),
                     }
                     response = ("static/html/interface.html", true);
                 } else {
-
                     response = match line_array[1] {
                     
                     // Interface Data
@@ -147,7 +138,8 @@ fn read_request(stream: TcpStream) {
 
                         // Appointments Data
 
-                        "/get-appointments" => ("g-app", false),
+                        "/get-appointments" => ("g-apps", false),
+                        "/get-appointment"  => ("g-app", false),
                         _                   => ("static/html/404.html", true),
                     }
                 }
@@ -176,18 +168,23 @@ fn write_response(mut stream: TcpStream, input:&str, is_file: bool) {
 // for example. This function automatically prepends HTTP headers.
 
 fn get_data(input: &str) -> String {
+
     let mut data = String::new();
     let mut return_value = String::new();
     let file = File::open("dat/regan.json").unwrap();
     let mut buf_reader = BufReader::new(file);
-    buf_reader.read_to_string(&mut data).unwrap();
-    return_value.push_str("HTTP/1.1 200 OK\r\n");
-    return_value.push_str("Content-Type: text/json\r\n");
-    return_value.push_str("Content-Length: ");
-    return_value.push_str(& data.len().to_string());
-    return_value.push_str("\r\n");
-    return_value.push_str("Connection: close\r\n\r\n");
-    return_value.push_str(&data);
+    sbuf_reader.read_to_string(&mut data).unwrap();
+
+    if (input == "g-apps") {
+        return_value.push_str("HTTP/1.1 200 OK\r\n");
+        return_value.push_str("Content-Type: text/json\r\n");
+        return_value.push_str("Content-Length: ");
+        return_value.push_str(& data.len().to_string());
+        return_value.push_str("\r\n");
+        return_value.push_str("Connection: close\r\n\r\n");
+        return_value.push_str(&data);
+    }
+    
     return_value
 }
 
@@ -204,7 +201,6 @@ fn add(params: &Vec<&str>) {
         param_line = item.split("=").collect();
         new_appoint[param_line[0]] = decode(param_line[1]).into();
     }
-
     if parsed["appointments"].len() == 0 {
         let mut new_appoint_array = json::JsonValue::new_array();
         new_appoint_array.push(new_appoint).unwrap();
@@ -218,46 +214,39 @@ fn add(params: &Vec<&str>) {
 }
 
 fn delete(params: &Vec<&str>) {
-
     let mut file_string = String::new();
     let mut file = File::open("dat/regan.json").unwrap();
     let mut buf_reader = BufReader::new(file);
     buf_reader.read_to_string(&mut file_string).unwrap();
     let mut parsed = json::parse(&file_string).unwrap();
-
     let mut new_appoint_array = json::JsonValue::new_array();
-    
     let mut param_line:Vec<&str>;
     let mut name_delete;
 
     // getting the name to delete
 
     name_delete = String::new();
-
     for item in params {
         param_line = item.split("=").collect();
         if param_line[0] == "app_to_delete" {
             name_delete = decode(param_line[1]);
         }
     }
-
-    println!("TO DELETE :{}", name_delete);
-
     for app in parsed["appointments"].members() {
         if app["title"].to_string() != name_delete.to_string() {
-
-            println!("Not deleting :{}", app["title"].to_string());
             new_appoint_array.push(app.to_owned()).unwrap();
         }
     }
-
-
     parsed["appointments"] = new_appoint_array;
-
-
     file = File::create("dat/regan.json").unwrap();
     file.write_all((json::stringify_pretty(parsed,4)).as_bytes()).unwrap();
 }
+
+fn edit(param: &Vec<&str>) {
+
+}
+
+// Function for decoding post data
 
 fn decode(input: &str) -> String {
     let input = input.replace("+", " ");
