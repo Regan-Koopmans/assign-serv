@@ -173,9 +173,9 @@ fn get_data(input: &str) -> String {
     let mut return_value = String::new();
     let file = File::open("dat/regan.json").unwrap();
     let mut buf_reader = BufReader::new(file);
-    sbuf_reader.read_to_string(&mut data).unwrap();
+    buf_reader.read_to_string(&mut data).unwrap();
 
-    if (input == "g-apps") {
+    if input == "g-apps" {
         return_value.push_str("HTTP/1.1 200 OK\r\n");
         return_value.push_str("Content-Type: text/json\r\n");
         return_value.push_str("Content-Length: ");
