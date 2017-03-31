@@ -19,11 +19,6 @@ use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 
-// for POST data handling
-
-extern crate urlparse;
-use urlparse::urlparse;
-
 // For json interaction
 
 extern crate json;
@@ -133,12 +128,11 @@ fn read_request(stream: TcpStream) {
 
                     match get_array[0] {
                         "/add"           => add(&get_params),
-                        _               => (),
+                        "/delete"        => delete(&get_params),
+                        _                => (),
                     }
 
                     println!("{}", get_array[0]);
-
-
 
                     response = ("static/html/interface.html", true);
                 } else {
@@ -211,12 +205,57 @@ fn add(params: &Vec<&str>) {
     let mut param_line:Vec<&str>;
     for item in params {
         param_line = item.split("=").collect();
-        new_appoint[param_line[0]] = param_line[1].into();
+        new_appoint[param_line[0]] = decode(param_line[1]).into();
     }
 
-    parsed["appointments"].push(new_appoint).unwrap();
+    if parsed["appointments"].len() == 0 {
+        let mut new_appoint_array = json::JsonValue::new_array();
+        new_appoint_array.push(new_appoint).unwrap();
+        parsed["appointments"] = new_appoint_array;
+    } else {
+        parsed["appointments"].push(new_appoint).unwrap();
+    }
     file = File::create("dat/regan.json").unwrap();
-
     file.write_all((json::stringify_pretty(parsed,4)).as_bytes()).unwrap();
 
+}
+
+fn delete(params: &Vec<&str>) {
+
+    let mut file_string = String::new();
+    let mut file = File::open("dat/regan.json").unwrap();
+    let mut buf_reader = BufReader::new(file);
+    buf_reader.read_to_string(&mut file_string).unwrap();
+    let mut parsed = json::parse(&file_string).unwrap();
+    let mut new_appoint_array = json::JsonValue::new_object();
+    let mut param_line:Vec<&str>;
+    let mut name_delete;
+
+    // getting the name to delete
+
+    name_delete = String::new();
+
+    for item in params {
+        param_line = item.split("=").collect();
+        if param_line[0] == "app_to_delete" {
+            name_delete = decode(param_line[1]);
+        }
+    }
+
+    for app in parsed["appointments"].members() {
+        if app["title"] != name_delete {
+            new_appoint_array.push(app.to_owned());
+        }
+    }
+
+    parsed["appointments"] = new_appoint_array;
+
+    file = File::create("dat/regan.json").unwrap();
+    file.write_all((json::stringify_pretty(parsed,4)).as_bytes()).unwrap();
+}
+
+fn decode(input: &str) -> String {
+    let input = input.replace("+", " ");
+    let input = input.replace("%3A", ":");
+    input
 }
