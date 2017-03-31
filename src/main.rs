@@ -159,7 +159,7 @@ fn write_response(mut stream: TcpStream, input:&str, is_file: bool) {
     if is_file {
         stream.write_all(get_file_bytes(input, true).as_slice()).unwrap();
     } else {
-        stream.write_all(get_data(input).as_bytes()).unwrap();
+        stream.write_all(get_data(input, "").as_bytes()).unwrap();
     }
     stream.flush().expect("Could not flush stream!");
 }
@@ -167,24 +167,26 @@ fn write_response(mut stream: TcpStream, input:&str, is_file: bool) {
 // Function that will generate an HTML page based on a country input, "za"
 // for example. This function automatically prepends HTTP headers.
 
-fn get_data(input: &str) -> String {
+fn get_data(input: &str, param: &str) -> String {
 
     let mut data = String::new();
     let mut return_value = String::new();
     let file = File::open("dat/regan.json").unwrap();
     let mut buf_reader = BufReader::new(file);
     buf_reader.read_to_string(&mut data).unwrap();
+    return_value.push_str("HTTP/1.1 200 OK\r\n");
+    return_value.push_str("Content-Type: text/json\r\n");
+    return_value.push_str("Content-Length: ");
+    return_value.push_str(& data.len().to_string());
+    return_value.push_str("\r\n");
+    return_value.push_str("Connection: close\r\n\r\n");
 
     if input == "g-apps" {
-        return_value.push_str("HTTP/1.1 200 OK\r\n");
-        return_value.push_str("Content-Type: text/json\r\n");
-        return_value.push_str("Content-Length: ");
-        return_value.push_str(& data.len().to_string());
-        return_value.push_str("\r\n");
-        return_value.push_str("Connection: close\r\n\r\n");
         return_value.push_str(&data);
     }
-    
+    if input == "g-app" {
+    	println!("hi {}", param);
+    }
     return_value
 }
 
