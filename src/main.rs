@@ -131,9 +131,6 @@ fn read_request(stream: TcpStream) {
                         "/delete"        => delete(&get_params),
                         _                => (),
                     }
-
-                    println!("{}", get_array[0]);
-
                     response = ("static/html/interface.html", true);
                 } else {
 
@@ -227,7 +224,9 @@ fn delete(params: &Vec<&str>) {
     let mut buf_reader = BufReader::new(file);
     buf_reader.read_to_string(&mut file_string).unwrap();
     let mut parsed = json::parse(&file_string).unwrap();
-    let mut new_appoint_array = json::JsonValue::new_object();
+
+    let mut new_appoint_array = json::JsonValue::new_array();
+    
     let mut param_line:Vec<&str>;
     let mut name_delete;
 
@@ -242,13 +241,19 @@ fn delete(params: &Vec<&str>) {
         }
     }
 
+    println!("TO DELETE :{}", name_delete);
+
     for app in parsed["appointments"].members() {
-        if app["title"] != name_delete {
-            new_appoint_array.push(app.to_owned());
+        if app["title"].to_string() != name_delete.to_string() {
+
+            println!("Not deleting :{}", app["title"].to_string());
+            new_appoint_array.push(app.to_owned()).unwrap();
         }
     }
 
+
     parsed["appointments"] = new_appoint_array;
+
 
     file = File::create("dat/regan.json").unwrap();
     file.write_all((json::stringify_pretty(parsed,4)).as_bytes()).unwrap();
