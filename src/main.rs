@@ -184,13 +184,33 @@ fn get_data(input: &str, param: &str) -> String {
     if input == "g-apps" {
         return_value.push_str(&data);
     }
-    if input == "g-app" {
-    	println!("hi {}", param);
-    }
     return_value
 }
 
+
+
 fn add(params: &Vec<&str>) {
+
+    let mut new_title = String::new();
+    let mut param_line:Vec<&str>;
+    let mut delete_string = String::new();
+    for item in params {
+        param_line = item.split("=").collect();
+        if param_line[0] == "title" {
+            new_title = decode(param_line[1]);
+        }
+    }
+
+    if contains(&new_title) {
+        println!("Deleting {} !", new_title);
+        let mut delete_params:Vec<&str> = Vec::new();
+        delete_string.push_str("app_to_delete=");
+        delete_string.push_str(&new_title);
+        delete_params.push(&delete_string);
+        delete(&delete_params);
+    } else {
+        println!("Not deleting {} !", new_title);
+    }
 
     let mut file_string = String::new();
     let mut file = File::open("dat/regan.json").unwrap();
@@ -198,7 +218,6 @@ fn add(params: &Vec<&str>) {
     buf_reader.read_to_string(&mut file_string).unwrap();
     let mut parsed = json::parse(&file_string).unwrap();
     let mut new_appoint = json::JsonValue::new_object();
-    let mut param_line:Vec<&str>;
     for item in params {
         param_line = item.split("=").collect();
         new_appoint[param_line[0]] = decode(param_line[1]).into();
@@ -213,6 +232,23 @@ fn add(params: &Vec<&str>) {
     file = File::create("dat/regan.json").unwrap();
     file.write_all((json::stringify_pretty(parsed,4)).as_bytes()).unwrap();
 
+}
+
+fn contains(key: &str) -> bool {
+    let mut file_string = String::new();
+    let mut file = File::open("dat/regan.json").unwrap();
+    let mut buf_reader = BufReader::new(file);
+    buf_reader.read_to_string(&mut file_string).unwrap();
+    let mut parsed = json::parse(&file_string).unwrap();
+    let mut param_line:Vec<&str>;
+
+    // getting the name to delete
+    for app in parsed["appointments"].members() {
+        if app["title"].to_string() == key.to_string() {
+            return true;
+        }
+    }
+    false
 }
 
 fn delete(params: &Vec<&str>) {
@@ -253,5 +289,8 @@ fn edit(param: &Vec<&str>) {
 fn decode(input: &str) -> String {
     let input = input.replace("+", " ");
     let input = input.replace("%3A", ":");
+    let input = input.replace("%2F", "/");
+    let input = input.replace("%28", "(");
+    let input = input.replace("%29", ")");
     input
 }
